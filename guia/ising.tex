@@ -1,0 +1,93 @@
+\documentclass[a4paper,11pt,oneside]{article}
+\pagestyle{plain}
+%\usepackage[a4paper, margin=1.2in]{geometry}
+
+%configuración del idioma y la codificacion
+\usepackage[spanish]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%fuente
+%\usepackage{times}
+\usepackage{palatino}
+
+%math
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage{bbold}
+\usepackage{dsfont}
+\usepackage{braket,mleftright}
+
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+%otros paquetes
+%\usepackage{rotating}
+\usepackage{cite}
+\usepackage[linktoc=page]{hyperref}
+\usepackage{indentfirst}
+
+%comandos
+\newcommand{\mean}[1]{\langle #1 \rangle}
+
+\title{Práctica computacional - Modelo de Ising}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introducción}
+
+Consideremos una grilla de $N\times N$ sitios en cada uno de los cuales hay
+un spin que solo puede tomar los valores $S = 1,-1$. Estos
+spines tienen interacciones tipo Ising dadas por el siguiente Hamiltoniano:
+\begin{equation}
+    H = -J\sum_\text{n.n} S_i S_j - H \sum_i S_i
+\end{equation}
+Donde la primer suma es sobre primeros vecinos y $J$ y $H$ son parámetros que
+dan la energía de interacción entre spines, y entre cada uno de ellos y un
+campo magnético externo. Supongamos que queremos calcular numéricamente algún
+observable macroscópico a una dada temperatura $\beta^{-1}$, como por ejemplo
+el valor medio de la magnetización total:
+\begin{equation}
+    \mean{M} = \sum_{S_1,\dots,S_N} p_{S_1,\dots,S_N} \; (S_1+S_2+\dots+S_N).
+    \label{eq:mag_total}
+\end{equation}
+Esta vez la suma es sobre todas las configuraciones posibles de los spines, y
+$p_{S_1,\dots,S_N}$ es la probabilidad de cada configuración, que según el
+ensamble canónico, es:
+\begin{equation}
+    p_{S_1,\dots,S_N} = \frac{1}{Z} \; e^{-\beta H(S_1,\dots,S_N)},
+\end{equation}
+donde $Z$ es la función de partición:
+\begin{equation}
+    Z = \sum_{S_1,\dots,S_N} e^{-\beta H(S_1,\dots,S_N)}.
+\end{equation}
+Si quisieramos evaluar la fórmula de la ecuación \ref{eq:mag_total} tal cual esta planteada,
+necesitariamos recorrer todos los estados posibles del sistema (al igual que
+para calcular exactamente la función de partición, necesaria para calcular las
+probabilidades $p_{S_1,\cdots,S_N}$). El problema es que la cantidad de estados
+es $2^{N^2}$, y solo para $N=10$ este número es ridículamente grande. Ninguna
+computadora podría recorrer todos estos estados en un tiempo razonable. Pero,
+como sabemos, hacer eso tampoco es necesario, ya que solo una fracción de los
+estados posibles contribuirá apreciablemente a la suma en la ecuación
+\ref{eq:mag_total}. Entonces, dado que no podemos recorrer todos los estados,
+una estrategia posible sería solo considerar algunos términos de la ecuación
+\ref{eq:mag_total}, de una forma tal que estos términos sean representativos
+de los estados que típicamente recorre el sistema cuando se encuentra a
+temperatura $\beta^{-1}$. Estos términos, naturalmente, son aquellos para los
+cuales la probabilidad $p_{S_1,\dots,S_N}$ es mayor.
+Dicho de otra forma, necesitamos `muestrear' la
+distribución de probabilidad $p_{S_1,\dots,S_N}$, es decir generar estados de
+forma tal que la fracción de veces que se genera el estado $(S_1,\dots,S_N)$
+sea $p_{S_1,\dots,S_N}$. El algoritmo de Metrópolis, que pertenece a la familia
+mas general de algoritmos de Montecarlo, es una solución a este problema.
+
+\section{Algoritmo de Metrópolis}
+
+El algoritmo de Metrópolis genera estados de la siguiente manera:
+
+\end{document}
+
+
