@@ -39,7 +39,7 @@
 
 \section{Introducción}
 
-Consideremos una grilla de $N\times N$ sitios en cada uno de los cuales hay
+Consideremos una grilla de $N = L\times L$ sitios en cada uno de los cuales hay
 un spin que solo puede tomar los valores $S = 1,-1$. Estos
 spines tienen interacciones tipo Ising dadas por el siguiente Hamiltoniano:
 \begin{equation}
@@ -68,7 +68,7 @@ Si quisieramos evaluar la fórmula de la ecuación \ref{eq:mag_total} tal cual e
 necesitariamos recorrer todos los estados posibles del sistema (al igual que
 para calcular exactamente la función de partición, necesaria para calcular las
 probabilidades $p_{S_1,\cdots,S_N}$). El problema es que la cantidad de estados
-es $2^{N^2}$, y solo para $N=10$ este número es ridículamente grande. Ninguna
+es $2^{N}$, y solo para $N=100$ este número es ridículamente grande. Ninguna
 computadora podría recorrer todos estos estados en un tiempo razonable. Pero,
 como sabemos, hacer eso tampoco es necesario, ya que solo una fracción de los
 estados posibles contribuirá apreciablemente a la suma en la ecuación
