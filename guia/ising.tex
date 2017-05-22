@@ -2,6 +2,8 @@
 \pagestyle{plain}
 %\usepackage[a4paper, margin=1.2in]{geometry}
 
+\usepackage{algpseudocode}
+
 %configuración del idioma y la codificacion
 \usepackage[spanish]{babel}
 \usepackage[utf8x]{inputenc}
@@ -43,9 +45,9 @@ Consideremos una grilla de $N = L\times L$ sitios en cada uno de los cuales hay
 un spin que solo puede tomar los valores $S = 1,-1$. Estos
 spines tienen interacciones tipo Ising dadas por el siguiente Hamiltoniano:
 \begin{equation}
-    H = -J\sum_\text{n.n} S_i S_j - H \sum_i S_i
+    H = -J\sum_\text{n.n} S_i S_j - B \sum_i S_i
 \end{equation}
-Donde la primer suma es sobre primeros vecinos y $J$ y $H$ son parámetros que
+Donde la primer suma es sobre primeros vecinos y $J$ y $B$ son parámetros que
 dan la energía de interacción entre spines, y entre cada uno de ellos y un
 campo magnético externo. Supongamos que queremos calcular numéricamente algún
 observable macroscópico a una dada temperatura $\beta^{-1}$, como por ejemplo
@@ -86,7 +88,40 @@ mas general de algoritmos de Montecarlo, es una solución a este problema.
 
 \section{Algoritmo de Metrópolis}
 
-El algoritmo de Metrópolis genera estados de la siguiente manera:
+El algoritmo de Metrópolis genera estados secuencialmente, de forma que cada
+estado es generado a partir del anterior de forma estocástica. La secuencia de
+estados generados es entonces una cadena de Markov, y el proceso de generación
+es tal que la distribución estacionaria es la distribución de Boltzmann que se
+desea muestrear. El algoritmo es muy sencillo, y para el caso de un sistema de
+Ising 2D se describe de la siguiente manera:
+\begin{enumerate}
+\item Se selecciona un estado inicial al azar o con algún criterio. Este estado
+    se uarda en una matriz $S$ de $L\times L$ cuyos elementos son $1$ o $-1$.
+\item Se elige aleatoriamente un sitio de la red. Es decir se eligen
+    coordenadas $i$ y $j$ según una distribución uniforme entre $1$ y $L$ (o
+    entre $0$ y $L-1$, según como se indexen las matrices en el lenguaje que
+    usen)
+\item Se calcula la diferencia de energía $\Delta E$ que resultaría de invertir
+    el estado del spin en la posición $(i,j)$.
+\item Si $\Delta E \leq 0$, se invierte el spin, es decir que el nuevo estado
+    de la red es $S'$, que es igual a $S$ excepto en el sitio $(i,j)$,
+    donde $S'(i,j) = -S(i,j)$.
+\item Si $\Delta E >0$, el spin se invierte con probabilidad $p = e^{-\beta\Delta
+    E}$. El nuevo estado de la red es de nuevo $S'$, que con probabilidad
+    $1-p$ será igual a $S$, y con probabilidad $p$ sera distinto sólo en el
+    valor del sitio $(i,j)$.
+\item Se repiten los pasos 2-5 con el nuevo estado $S'$, tantas veces como sea
+    necesario.
+\end{enumerate}
+Este algoritmo genera una secuencia de estados $S_1,S_2,S_3,\dots$, donde cada
+estado depende solo del anterior de una manera estocástica (un dado estado
+$S_k$ puede dar lugar a muchos estados distintos $S_{k+1}$ con distintas probabilidades).
+El punto crucial del algoritmo es que las probabilidades de transición de un
+estado $a$ a un estado $b$ satisfacen la condición:
+\begin{equation}
+    \frac{P(a\to b)}{P(b\to a} = e^{-\beta(E_b-E_a)}
+    \label{eq:bal_detallado}
+\end{equation}
 
 \end{document}
 
