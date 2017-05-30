@@ -2,7 +2,7 @@
 \pagestyle{plain}
 %\usepackage[a4paper, margin=1.2in]{geometry}
 
-\usepackage{algpseudocode}
+\usepackage{mdframed}
 
 %configuración del idioma y la codificacion
 \usepackage[spanish]{babel}
@@ -40,7 +40,6 @@
 \maketitle
 
 \section{Introducción}
-
 Consideremos una grilla de $N = L\times L$ sitios en cada uno de los cuales hay
 un spin que solo puede tomar los valores $S = 1,-1$. Estos
 spines tienen interacciones tipo Ising dadas por el siguiente Hamiltoniano:
@@ -48,7 +47,7 @@ spines tienen interacciones tipo Ising dadas por el siguiente Hamiltoniano:
     H = -J\sum_\text{n.n} S_i S_j - B \sum_i S_i
 \end{equation}
 Donde la primer suma es sobre primeros vecinos y $J$ y $B$ son parámetros que
-dan la energía de interacción entre spines, y entre cada uno de ellos y un
+dan la energía de interacción entre spines, entre cada uno de ellos y un
 campo magnético externo. Supongamos que queremos calcular numéricamente algún
 observable macroscópico a una dada temperatura $\beta^{-1}$, como por ejemplo
 el valor medio de la magnetización total:
@@ -104,7 +103,7 @@ Ising 2D se describe de la siguiente manera:
 \item Se calcula la diferencia de energía $\Delta E$ que resultaría de invertir
     el estado del spin en la posición $(i,j)$.
 \item Si $\Delta E \leq 0$, se invierte el spin, es decir que el nuevo estado
-    de la red es $S'$, que es igual a $S$ excepto en el sitio $(i,j)$,
+    de la red, $S'$, es igual a $S$ excepto en el sitio $(i,j)$,
     donde $S'(i,j) = -S(i,j)$.
 \item Si $\Delta E >0$, el spin se invierte con probabilidad $p = e^{-\beta\Delta
     E}$. El nuevo estado de la red es de nuevo $S'$, que con probabilidad
@@ -119,9 +118,87 @@ $S_k$ puede dar lugar a muchos estados distintos $S_{k+1}$ con distintas probabi
 El punto crucial del algoritmo es que las probabilidades de transición de un
 estado $a$ a un estado $b$ satisfacen la condición:
 \begin{equation}
-    \frac{P(a\to b)}{P(b\to a} = e^{-\beta(E_b-E_a)}
+    \frac{P(a\to b)}{P(b\to a)} = e^{-\beta(E_b-E_a)} = \frac{e^{-\beta
+    E_b}/Z}{e^{-\beta E_a}/Z} = \frac{P_b}{P_a}
     \label{eq:bal_detallado}
 \end{equation}
+Esta condición se conoce como 'balance detallado', e implica que el proceso
+estocástico alcanza un estado estacionario donde la probabilidad de observar el
+estado $a$ es $P_a \propto e^{-\beta E_a}$. Notar que en ningún paso del
+algoritmo, ni en la condición de balance detallado, es necesario conocer la
+constante de normalización de la distribución de probabilidad que se desea
+muestrear (en este caso, esta constante es la función de partición canónica).
+Por lo tanto, la condición de balance detallado nos asegura que cuando el
+proceso de generación de estados alcance un estado estacionario (lo cuál se
+espera que suceda luego de un número suficiente de interaciones) la
+probabilidad de cada estado estará dada por el factor de Boltzmann. 
+
+
+\begin{mdframed}
+\emph{Ejercicio: Tiempo de equilibración}. Estudie como evoluciona la
+magnetización y la energía del sistema en función del número de iteraciones,
+comenzando de una configuración aleatoria. ¿Cuántas iteraciones son necesarias
+para que estas magnitudes alcancen un equilibrio? ¿Depende este tiempo del
+tamaño del sistema o de la temperatura? Como ejemplo se muestra la
+magnetización total en función del número de iteraciones para $L=16,T=2,J=1,B=0$.
+
+{\centering \includegraphics[scale=.6]{./figuras/equil_mag.png}\par}
+
+\end{mdframed}
+
+\section{Encontrando la transición de fase}
+
+En la sección anterior vimos como generar estados representativos del sistema a
+una dada temperatura. Para cada uno de estos
+estados podemos calcular su energía, su magnetización, o algún otro observable
+de interés. De esta forma se puede estudiar numéricamente el comportamiento del
+sistema a distintas temperaturas. En partícular, vamos a estar interesados en
+el comportamiento crítico del sistema cerca de una transición de fase. Para el
+modelo de Ising en 2D sin campo externo, 
+una solución exacta fue obtenida por primera vez por
+Lars Onsager en 1944. A partir de esta solución sabemos que existe una
+transición de segundo orden entre una fase ordenada a bajas temperaturas,
+y una fase desordenada para altas temperaturas. Esta transición ocurre a una
+temperatura crítica $T_c$ que satisface $k_b T_c /J = 2/\ln(1+\sqrt{2}) \simeq
+2.2691\dots$ (de aquí en mas se toma $k_b=1$).
+
+Para hacer una primera caracterización de la transición de fase vamos a
+considerar cuatro cantidades relevantes:
+\begin{itemize}
+    \item Valor medio de la magnetización: $\langle M \rangle$
+    \item Desvío estandar de la magnetización: $\sigma_M = \sqrt{\langle
+        M^2 \rangle - \langle M \rangle^2}$
+    \item Valor medio de la energía: $\langle E \rangle$
+    \item Desvío estandar de la energía: $\sigma_E = \sqrt{\langle
+        E^2 \rangle - \langle E \rangle^2}$
+\end{itemize}
+Por ejemplo, si para una dada temperatura 
+se generaron $K$ estados (luego de una cantidad de prudente de
+iteraciones para asegurar que el sistema termalice), y para cada uno de ellos
+se calculó la magnetización, se tienen $K$ valores $M_1, M_2,M_3,\dots,M_K$, y
+el valor medio será $\mean{M} = (\sum_{k=1}^K M_k)/K$.
+
+\begin{mdframed}
+\emph{Ejercicio: Energía y magnetización en función de la temperatura}.
+Grafique en función de la temperatura la energía y magnetización media para un
+sistema con $L=16$. Interprete los resultados. 
+
+¿Cómo calcularía el calor específico $C_V$ y la suceptibilidad magnética
+$\chi_M$? ¿Cómo estan
+relacionadas estan cantidades con las desviaciones estandar de la energía y la
+magnetización? Grafíque $C_V$ y $\chi_M$ en función de la temperatura y compare los
+resultados con los esperados a partir de la solución exacta y de la teoría de
+campo medio. Estime el valor de la temperatura crítica para $L=16,24,32$.
+%{\centering \includegraphics[scale=.6]{./figuras/equil_mag.png}\par}
+\end{mdframed}
+
+
+
+
+
+
+
+
 
 \end{document}
 

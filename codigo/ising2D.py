@@ -1,6 +1,7 @@
 import numpy as np
 
 def autocorr(A,k):
+#    print(k)
 
     a = np.mean(A)
 
@@ -10,6 +11,21 @@ def autocorr(A,k):
 
     return c/(len(A)-k)
 
+
+def corr_func(S):
+
+    X, Y = S.shape
+    C = 0 
+
+    for l in range(X):
+        c = [autocorr(S[l,:],k) for k in range(Y-1)]
+        C += np.array(c)
+
+    for l in range(Y):
+        c = [autocorr(S[:,l],k) for k in range(X-1)]
+        C += np.array(c)
+
+    return C/(X+Y-2)
 
 def energy(S,H):
 
@@ -54,43 +70,51 @@ def measurement(oldS,H,b,ST):
     E = [energy(oldS,H)]
     M = [np.sum(oldS)]
     
+    C = 0
+    count = 0
+
     for t in range(ST):
         S, dM, dE = update(oldS,H,b)
         M.append(M[-1]+dM)
         E.append(E[-1]+dE)
-
         oldS = S
+        if t%1000 == 0:
+            C += corr_func(S)
+            count += 1
 
-    mE = np.mean(E[::500])
-    sE = np.std(E[::500])
+    mE = np.mean(E[::10])
+    sE = np.std(E[::10])
 
-    mM = np.mean(M[::500])
-    sM = np.std(M[::500])
+    mM = np.mean(M[::10])
+    sM = np.std(M[::10])
 
-    return mE,sE,mM,sM
+    return mE,sE,mM,sM,C/count
 
 L = 32
 H = 0
 
-PT = 100000
+PT = 800000
 
 S = -1 + 2*np.random.randint(2,size=(L,L))
+#S = np.ones((L,L))
 
 E = [energy(S,H)]
 M = [np.sum(S)]
 
 #for t in range(200000):
-#    S, dM, dE = update(S,H,.8)
+#    S, dM, dE = update(S,H,1/2)
 #    M.append(M[-1]+dM)
 #    E.append(E[-1]+dE)
 
-T = np.arange(1.5,3.5,.05)
+T = np.arange(1.5,3,.1)
+T = T[::-1]
 B = 1/T
 
 ME = []
 SE = []
 MM = []
 SM = []
+C = []
 
 # pretermalization
 for t in range(PT):
@@ -100,8 +124,9 @@ for t in range(PT):
 for b in B:
     print(b)
 
-    mE,sE,mM,sM = measurement(S,H,b,20*PT)
+    mE,sE,mM,sM,c = measurement(S,H,b,PT)
     ME.append(mE)
     SE.append(sE)
     MM.append(mM)
     SM.append(sM)
+    C.append(c)
