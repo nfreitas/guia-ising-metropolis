@@ -86,6 +86,7 @@ sea $p_{S_1,\dots,S_N}$. El algoritmo de Metrópolis, que pertenece a la familia
 mas general de algoritmos de Montecarlo, es una solución a este problema.
 
 \section{Algoritmo de Metrópolis}
+\label{sec:metro}
 
 El algoritmo de Metrópolis genera estados secuencialmente, de forma que cada
 estado es generado a partir del anterior de forma estocástica. La secuencia de
@@ -95,7 +96,7 @@ desea muestrear. El algoritmo es muy sencillo, y para el caso de un sistema de
 Ising 2D se describe de la siguiente manera:
 \begin{enumerate}
 \item Se selecciona un estado inicial al azar o con algún criterio. Este estado
-    se uarda en una matriz $S$ de $L\times L$ cuyos elementos son $1$ o $-1$.
+    se guarda en una matriz $S$ de $L\times L$ cuyos elementos son $1$ o $-1$.
 \item Se elige aleatoriamente un sitio de la red. Es decir se eligen
     coordenadas $i$ y $j$ según una distribución uniforme entre $1$ y $L$ (o
     entre $0$ y $L-1$, según como se indexen las matrices en el lenguaje que
@@ -196,7 +197,8 @@ campo medio. Estime el valor de la temperatura crítica para $L=16$ y $L=32$.
 
 \section{Longitud de Correlación}
 
-Otra característica distintiva de las transiciones de fase de 2do orden es el desarrollo de
+Otra característica distintiva de las transiciones de fase de 2do orden 
+es el desarrollo de
 correlaciones de largo rango dentro del sistema. Para estudiar este fenómeno
 consideramos la función:
 \begin{equation}
@@ -206,15 +208,75 @@ que expresa la correlación entre un spin en la posición $\bar r_1$ y otro en l
 posición $\bar r_2$.
 Dada la simetría del sistema, en nuestro caso
 esta función solo puede depender de la variable $R=|\bar r_1 - \bar r_2|$. Para
-sistemas que tienen interacciones locales y a altas temperaturas
+sistemas que tienen interacciones locales y a altas temperaturas se espera que
+estas correlaciones decaigan exponencialmente con $R$:
+\begin{equation}
+    C(R) \propto e^{-R/\xi},
+\end{equation}
+donde $\xi$ es la distancia de correlación, que depende en general de la
+temperatura (en realidad hay otra dependencia en $1/R$ que vamos a obviar). En el límite termodinámico, $\xi \to \infty$ para $T\to T_c$, lo
+cual indica que en el punto crítico existen correlaciones entre spines sin
+importar cuan separados estén. Por supuesto, en un sistema finito la longitud
+de correlación no diverge pero se espera observar un máximo en la temperatura
+crítica.
+
+\begin{mdframed}
+\emph{Ejercicio: Longitud de correlación en función de la temperatura}.
+Grafique la función de correlación entre un spin cualquiera 
+y los otros de la misma fila o
+columna, para distintas temperaturas. Interprete los resultados. 
+Estime la longitud de correlación para cada caso y grafique en función de la
+temperatura.
+%{\centering \includegraphics[scale=.6]{./figuras/equil_mag.png}\par}
+\end{mdframed}
 
 
 
 
 
 
+\section{Algunos comentarios técnicos}
+El algoritmo de Metrópolis básico explicado en la sección \ref{sec:metro} 
+tiene algunas limitaciones. En primer lugar sucede que los estados que genera
+no son independientes uno del otro, lo cuál es obvio ya que los estados se
+generan modificando el estado anterior. Sin embargo, estas correlaciones 
+disminuyen mientras mas iteracciones haya entre un estado y otro. En general,
+habrá un número de iteraciones $I_r$ tales que si dos estados están separados
+por un número de iteraciones mayor a $I_r$, estos pueden ser considerados como
+estadísticamente independientes. Por lo tanto, una forma directa de generar
+estados independientes seria solo considerar estados separados cada $I_r$
+iteraciones o más. Esto por supuesto tiene un costo computacional, ya que
+debemos correr mas tiempo el algoritmo para generar un dado número de estados
+para tomar datos.
 
-
+Además, el número $I_r$ de iteraciones necesarias para 'olvidar' las
+correlaciones depende de la temperatura. Cerca de la transición de fase, esta
+cantidad se hace muy grande, por lo que el tiempo que debería correrse el
+algoritmo para generar muestras independientes también se hace muy largo.
+Para ilustrar esto, en la figura
+\ref{fig:autocorr_mag} se muestra la función de autocorrelación para la serie
+de valores de magnetización total $M$ generados por el algoritmo de Metrópolis
+para un sistema con $L=32$.
+Se ve que para temperaturas altas ($T=4$), la autocorrelacion decae a valores que
+fluctuan en torno a $0$ para distancias entre estados mayores a aproximadamente
+$I_r \simeq 10^3$ iteraciones. Sin embargo, 
+cerca de la temperatura crítica la función de
+autocorrelación oscila entre valores positivos y negativos decayendo muy
+lentamente, y se ve claramente que el valor de $I_r$ que debería tomarse 
+es mayor a $10^4$. Este fenómeno se conoce como 'critical slowing down', y
+existen algunas maneras de evitarlo parcialmente. Una posibilidad es utilizar
+algorimos basados en el reconocimiento de grupos de spines o 'clusters', que se
+definen como regiones formadas por spines contiguos con el mismo valor. Estos
+clusters son tratados entonces como una unidad, y la orientación de todos los 
+spines correspondiente a un dado cluster 
+es invertida de forma conjunta, 
+de una forma similar al algoritmo de Metrópolis original.
+\begin{figure}
+\centering
+\includegraphics[scale=.6]{./figuras/autocorr_mag.png}
+\caption{Autocorrelación de la serie temporal de la magnetización para un
+    sitema con $L=32$ y dos temperaturas distintas. \label{fig:autocorr_mag}}
+\end{figure}
 \end{document}
 
 

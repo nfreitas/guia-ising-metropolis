@@ -1,9 +1,10 @@
 import numpy as np
 
-def autocorr(A,k):
+def autocorr(A,k,a=None):
 #    print(k)
 
-    a = np.mean(A)
+    if not a:
+        a = np.mean(A)
 
     c = 0
     for j in range(len(A)-k):
@@ -14,18 +15,21 @@ def autocorr(A,k):
 
 def corr_func(S):
 
-    X, Y = S.shape
+    a = np.sum(S)/S.size
+
+    X, Y = (8,8) #S.shape
     C = 0 
 
     for l in range(X):
-        c = [autocorr(S[l,:],k) for k in range(Y-1)]
+        c = [autocorr(S[l,:],k,a) for k in range(Y-1)]
         C += np.array(c)
 
     for l in range(Y):
-        c = [autocorr(S[:,l],k) for k in range(X-1)]
+        c = [autocorr(S[:,l],k,a) for k in range(X-1)]
         C += np.array(c)
 
     return C/(X+Y-2)
+#    return C/(X-1)
 
 def energy(S,H):
 
@@ -71,6 +75,7 @@ def measurement(oldS,H,b,ST):
     M = [np.sum(oldS)]
     
     C = 0
+    D = np.zeros(oldS.shape[0])
     count = 0
 
     for t in range(ST):
@@ -79,7 +84,11 @@ def measurement(oldS,H,b,ST):
         E.append(E[-1]+dE)
         oldS = S
         if t%1000 == 0:
+#            m = M[-1]/(S.shape[0]*S.shape[1])
             C += corr_func(S)
+#            for k in range(oldS.shape[0]):
+#                D[k] += (S[0,k]-m)*(S[0,0]-m)
+#                D[k] += (S[k,0]-m)*(S[0,0]-m)
             count += 1
 
     mE = np.mean(E[::10])
@@ -88,12 +97,12 @@ def measurement(oldS,H,b,ST):
     mM = np.mean(M[::10])
     sM = np.std(M[::10])
 
-    return mE,sE,mM,sM,C/count
+    return mE,sE,mM,sM,C/count,D/(2*count)
 
-L = 32
+L = 36
 H = 0
 
-PT = 800000
+PT = 200000
 
 S = -1 + 2*np.random.randint(2,size=(L,L))
 #S = np.ones((L,L))
@@ -101,32 +110,35 @@ S = -1 + 2*np.random.randint(2,size=(L,L))
 E = [energy(S,H)]
 M = [np.sum(S)]
 
-#for t in range(200000):
-#    S, dM, dE = update(S,H,1/2)
-#    M.append(M[-1]+dM)
-#    E.append(E[-1]+dE)
+for t in range(200000):
+    S, dM, dE = update(S,H,1/4)
+    M.append(M[-1]+dM)
+    E.append(E[-1]+dE)
 
-T = np.arange(1.5,3,.1)
-T = T[::-1]
-B = 1/T
-
-ME = []
-SE = []
-MM = []
-SM = []
-C = []
-
-# pretermalization
-for t in range(PT):
-    S, dM, dE = update(S,H,B[0])
-
-# measurement
-for b in B:
-    print(b)
-
-    mE,sE,mM,sM,c = measurement(S,H,b,PT)
-    ME.append(mE)
-    SE.append(sE)
-    MM.append(mM)
-    SM.append(sM)
-    C.append(c)
+#T = np.arange(1.5,3,.1)
+#T = T[::-1]
+#B = 1/T
+#
+#ME = []
+#SE = []
+#MM = []
+#SM = []
+#C = []
+#D = []
+#
+## measurement
+#for b in B:
+#    print(b)
+#
+#    #S = -1 + 2*np.random.randint(2,size=(L,L))
+#    # pretermalization
+##    for t in range(PT):
+##        S, dM, dE = update(S,H,B[0])
+#
+#    mE,sE,mM,sM,c,d = measurement(S,H,b,2*PT)
+#    ME.append(mE)
+#    SE.append(sE)
+#    MM.append(mM)
+#    SM.append(sM)
+#    C.append(c)
+#    D.append(d)
